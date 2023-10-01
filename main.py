@@ -75,7 +75,7 @@ def populateMasterSheet(masterWorkbook, sheetnames):
             row = currentSheet[i]
 
             # Creating an instance of the Procedure class
-            procedure_instance = Procedure(row[0].value, row[1].value, row[2].value, row[3].value)
+            procedure_instance = Procedure(row[0].value, row[1].value, row[2].value, row[5].value)
             all_procedures.append(procedure_instance)
 
             rowContents = list()
@@ -94,29 +94,39 @@ def populateMasterSheet(masterWorkbook, sheetnames):
 def makeSecondarySheet(masterWorkbook):
     rvuSheet = masterWorkbook.create_sheet(title="RVU Sums")
 
-    firstrow = list()
-    firstrow.append("Doctors")
-    firstrow += procedureCategories
+    # Create first row of secondary sheet
+    firstRow = list()
+    firstRow.append("Doctors")
+    firstRow += procedureCategories
+    firstRow.append("Total")
+    rvuSheet.append(firstRow)
 
-    rvuSheet.append(firstrow)
+    # DEBUG
+    # print("There are", len(doctors), "doctors total")
 
-    number_doctors = len(doctors)
-    print("There are", number_doctors, "doctors total")
-
-    for i in range(2, (number_doctors + 1)):
+    for doctor in doctors:
+        # Create a row to add to sheet
         row = list()
 
         # Add doctor
-        current_doctor = doctors[i-2]
-        row.append(doctors[i-2])
+        row.append(doctor)
 
-        for j in range (0, len(procedureCategories)):
-            category_sum = 0
-            for k in range (0, len(all_procedures)):
-                if all_procedures[k].doctor == current_doctor and procedureCodes[all_procedures[k].proc_code] == procedureCategories[i]:
-                    category_sum += int(all_procedures[k].rvu_value)
-                row.append(str(category_sum))
+        # Create a sum for the doctor
+        doctorSum = 0.0
 
+        for procedureCategory in procedureCategories:
+            # Create a sum for the procedureCategory
+            categorySum = 0.0
+
+            for procedure in all_procedures:
+
+                if procedure.doctor == doctor and procedureCodes[procedure.proc_code] == procedureCategory:
+                    categorySum += procedure.rvu_value
+
+            doctorSum += categorySum
+            row.append(categorySum)
+
+        row.append(doctorSum)
         rvuSheet.append(row)
 
     masterWorkbook.save("mastersheet.xlsx")
